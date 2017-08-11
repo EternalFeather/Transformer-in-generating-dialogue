@@ -113,6 +113,6 @@ This is the structure of transformer which is the core of implementing our model
 
 ![](https://i.imgur.com/MJdMnvt.png)
 
-# KeyWords
+# Reference
 
-Tags: `Transformer` `Attention is all you need` `Conversation Model`
+Thanks for ![Transformer](https://github.com/Kyubyong/transformer)
