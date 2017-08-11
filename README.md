@@ -115,4 +115,4 @@ This is the structure of transformer which is the core of implementing our model
 
 # Reference
 
-Thanks for ![Transformer](https://github.com/Kyubyong/transformer)
+Thanks for [Transformer](https://github.com/Kyubyong/transformer)
