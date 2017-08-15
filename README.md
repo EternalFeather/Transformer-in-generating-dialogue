@@ -116,4 +116,5 @@ This is the structure of transformer which is the core of implementing our model
 # Reference
 
 Thanks for [Transformer](https://github.com/Kyubyong/transformer)
-在原先的模组上添加了Attention is all you need提到的Position encoding的部分
+
+- 本文在原先的模组上添加了Attention is all you need提到的Position encoding的部分
