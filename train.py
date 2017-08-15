@@ -32,8 +32,9 @@ class Graph():
 									scale = True,
 									scope = "enc_embed")
 
-				# Position Encoding(use range from 0 to len(inpt) to represent position dim)
-				self.enc += embedding(tf.tile(tf.expand_dims(tf.range(tf.shape(self.inpt)[1]), 0), [tf.shape(self.inpt)[0], 1]),
+				# Position Encoding(use range from 0 to len(inpt) to represent position dim of each words)
+				# tf.tile(tf.expand_dims(tf.range(tf.shape(self.inpt)[1]), 0), [tf.shape(self.inpt)[0], 1]),
+				self.enc += positional_encoding(self.inpt,
 									vocab_size = pm.maxlen,
 									num_units = pm.hidden_units,
 									zero_pad = False,
@@ -68,7 +69,7 @@ class Graph():
 								scope = "dec_embed")
 
 				# Position Encoding(use range from 0 to len(inpt) to represent position dim)
-				self.dec += embedding(tf.tile(tf.expand_dims(tf.range(tf.shape(self.decoder_input)[1]), 0), [tf.shape(self.decoder_input)[0], 1]),
+				self.dec += positional_encoding(self.decoder_input,
 									vocab_size = pm.maxlen,
 									num_units = pm.hidden_units,
 									zero_pad = False,
