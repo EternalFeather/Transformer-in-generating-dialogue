@@ -65,27 +65,54 @@ def positional_encoding(inputs,
 
 	with tf.variable_scope(scope, reuse = reuse):
 
-		input_one = tf.tile(tf.expand_dims(tf.range(tf.shape(inputs)[1]), 0), [tf.shape(inputs)[0], 1])
-		position_block = tf.tile(tf.expand_dims(tf.range(vocab_size), 1), [1, num_units // 2])
-		unit_block = tf.tile(tf.expand_dims(tf.range(num_units // 2), 0), [vocab_size, 1])
-		rad_block = tf.pow(tf.div(position_block, tf.multiply(10000, 1)), tf.div(unit_block, num_units // 2))
-		sin_block = tf.sin(tf.cast(rad_block, tf.float32))
-		cos_block = tf.cos(tf.cast(rad_block, tf.float32))
-		lookup_table = tf.concat([sin_block, cos_block], axis = 1)
+# 		input_one = tf.tile(tf.expand_dims(tf.range(tf.shape(inputs)[1]), 0), [tf.shape(inputs)[0], 1])
+# 		position_block = tf.tile(tf.expand_dims(tf.range(vocab_size), 1), [1, num_units // 2])
+# 		unit_block = tf.tile(tf.expand_dims(tf.range(num_units // 2), 0), [vocab_size, 1])
+# 		rad_block = tf.pow(tf.div(position_block, tf.multiply(10000, 1)), tf.div(unit_block, num_units // 2))
+# 		sin_block = tf.sin(tf.cast(rad_block, tf.float32))
+# 		cos_block = tf.cos(tf.cast(rad_block, tf.float32))
+# 		lookup_table = tf.concat([sin_block, cos_block], axis = 1)
 
-		# lookup_table = tf.get_variable('lookup_table',
-		# 								dtype = tf.float32,
-		# 								shape = [vocab_size, num_units],
-		# 								initializer = tf.contrib.layers.xavier_initializer())
+# 		# lookup_table = tf.get_variable('lookup_table',
+# 		# 								dtype = tf.float32,
+# 		# 								shape = [vocab_size, num_units],
+# 		# 								initializer = tf.contrib.layers.xavier_initializer())
+
+# 		if zero_pad:
+
+# 			lookup_table = tf.concat((tf.zeros(shape = [1, num_units]),
+# 									lookup_table[1:, :]), 0)
+# 		outputs = tf.nn.embedding_lookup(lookup_table, input_one)
+		
+# 		if scale:
+# 			outputs = outputs * math.sqrt(num_units)
+
+# 	return outputs
+
+	N, T = inputs.get_shape().as_list()
+	
+   	with tf.variable_scope(scope, reuse=reuse):
+		position_ind = tf.tile(tf.expand_dims(tf.range(T), 0), [N, 1])
+
+		# First part of the PE function: sin and cos argument
+		position_enc = np.array([
+		    [pos / np.power(10000, 2.*i/num_units) for i in range(num_units)]
+		    for pos in range(T)])
+
+		# Second part, apply the cosine to even columns and sin to odds.
+		position_enc[:, 0::2] = np.sin(position_enc[:, 0::2])  # dim 2i
+		position_enc[:, 1::2] = np.cos(position_enc[:, 1::2])  # dim 2i+1
+
+		# Convert to a tensor
+		lookup_table = tf.convert_to_tensor(position_enc)
 
 		if zero_pad:
+		    lookup_table = tf.concat((tf.zeros(shape=[1, num_units]),
+					      lookup_table[1:, :]), 0)
+		outputs = tf.nn.embedding_lookup(lookup_table, position_ind)
 
-			lookup_table = tf.concat((tf.zeros(shape = [1, num_units]),
-									lookup_table[1:, :]), 0)
-		outputs = tf.nn.embedding_lookup(lookup_table, input_one)
-		
 		if scale:
-			outputs = outputs * math.sqrt(num_units)
+		    outputs = outputs * num_units**0.5
 
 	return outputs
 
