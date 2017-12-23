@@ -113,8 +113,8 @@ def positional_encoding(inputs,
 
 		if scale:
 		    outputs = outputs * num_units**0.5
-
-	return outputs
+		
+	return tf.cast(outputs, tf.float32)
 
 
 def embedding(inputs,
