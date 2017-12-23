@@ -12,7 +12,7 @@ class Params:
 	batch_size = 32
 	hidden_units = 512
 	logdir = 'logdir'
-	num_epochs = 20
+	num_epochs = 250
 	num_identical = 6
 	num_heads = 8
 	dropout = 0.1
