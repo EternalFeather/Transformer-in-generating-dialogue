@@ -63,7 +63,7 @@ def positional_encoding(inputs,
 	# sin_block = np.sin(rad_block)
 	# cos_block = np.cos(rad_block)
 
-	with tf.variable_scope(scope, reuse = reuse):
+#	with tf.variable_scope(scope, reuse = reuse):
 
 # 		input_one = tf.tile(tf.expand_dims(tf.range(tf.shape(inputs)[1]), 0), [tf.shape(inputs)[0], 1])
 # 		position_block = tf.tile(tf.expand_dims(tf.range(vocab_size), 1), [1, num_units // 2])
