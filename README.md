@@ -58,31 +58,44 @@ An Implementation of Attention is all you need with Chinese Corpus
 - Layer outputs can be calculated in parallel, instead of a series like an RNN.(Faster training)
 - Distant items can affect each other's output without passing through many RNN-steps, or CNN layers.(Lower cost)
 - It can learn long-range dependencies, which is a challenge of dialogue system.
-- **In the newest version of our code**, we complete the details described in paper.
-    - Use tfrecord to unified data storage format.
-    - Use dataset to load the processed chinese token datasets.
-    - Since the model doesn't contain any memory mechanism, positional encoding is added to give it some information about the relative position of the words in the sentence by representing a token into a d-dimensional space where tokens with similar meaning will be closer to each other.  
-    
+
+## Implementation details
+&emsp;&emsp;**In the newest version of our code**, we complete the details described in paper.  
+
+### Data Generation
+- Use tfrecord to unified data storage format.
+- Use dataset to load the processed chinese token datasets.
+
+### Positional Encoding
+- Since the model doesn't contain any memory mechanism, positional encoding is added to give it some information about the relative position of the words in the sentence by representing a token into a d-dimensional space where tokens with similar meaning will be closer to each other.  
+
+<div align='center'>
     <img src="http://latex.codecogs.com/gif.latex?\Large{PE_{(pos, 2i)} = sin(pos / 10000^{2i / d_{model}})}" />
-    <img src="http://latex.codecogs.com/gif.latex?\Large{PE_{(pos, 2i+1)} = cos(pos / 10000^{2i / d_{model}})}" />  
-    
-    - We create two different type of mask during training. One is for the padding masking, the other is for the decoder look_ahead masking to keep the following tokens invisible when generating the previous ones.
-    - The attention function used by the transformer takes three inputs: Q,K,V. The equation used to calculate the attention weights, which is scaled by a factor of square root of the depth is:  
-    
+    <img src="http://latex.codecogs.com/gif.latex?\Large{PE_{(pos, 2i+1)} = cos(pos / 10000^{2i / d_{model}})}" />
+</div>
+
+### Mask
+- We create two different type of mask during training. One is for the padding masking, the other is for the decoder look_ahead masking to keep the following tokens invisible when generating the previous ones.
+
+### Scaled dot product attention
+- The attention function used by the transformer takes three inputs: Q,K,V. The equation used to calculate the attention weights, which is scaled by a factor of square root of the depth is:  
+
+<div align='center'>
     <img src="http://latex.codecogs.com/gif.latex?\Large{Attention(Q, K, V) = softmax_k(\frac{QK^T}{\sqrt{d_k}}) V}" />  
-    
-    ![](images/scaled_attention.png)
-    
-    - Multi-head attention consists of four parts: **Linear layers**、**Multi-head attention**、**Concatenation of heads** and **Final linear layers**.
-    
-    ![](images/multi_head_attention.png)
-    
-    - Pointwise feedforward network consists of two fully-connected layers with ReLU activation in between.
-    - Use the adam optimizer with a custom learning rate scheduler according to the formula like:  
-    
-    <img src="http://latex.codecogs.com/gif.latex?\Large{lrate = d_{model}^{-0.5} * min(step{\_}num^{-0.5}, step{\_}num * warmup{\_}steps^{-1.5})}" />  
-    
-    ![](images/learning_rate.png)
+</div>
+
+<img class="course-image" src="https://github.com/EternalFeather/Transformer-in-generating-dialogue/blob/master/images/scaled_attention.png">
+
+- Multi-head attention consists of four parts: **Linear layers**、**Multi-head attention**、**Concatenation of heads** and **Final linear layers**.
+
+![](images/multi_head_attention.png)
+
+- Pointwise feedforward network consists of two fully-connected layers with ReLU activation in between.
+- Use the adam optimizer with a custom learning rate scheduler according to the formula like:  
+
+<img src="http://latex.codecogs.com/gif.latex?\Large{lrate = d_{model}^{-0.5} * min(step{\_}num^{-0.5}, step{\_}num * warmup{\_}steps^{-1.5})}" />  
+
+![](images/learning_rate.png)
 
 However, such a strong architecture still have some downsides:
 - For a time-series, the output for a time-step is calculated from the entire history of only the inputs and current hidden-state(Just like the different between CRF & HMM). So that it may be less efficient.
