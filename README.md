@@ -61,18 +61,27 @@ An Implementation of Attention is all you need with Chinese Corpus
 - **In the newest version of our code**, we complete the details described in paper.
     - Use tfrecord to unified data storage format.
     - Use dataset to load the processed chinese token datasets.
-    - Since the model doesn't contain any memory mechanism, positional encoding is added to give it some information about the relative position of the words in the sentence by representing a token into a d-dimensional space where tokens with similar meaning will be closer to each other. 
+    - Since the model doesn't contain any memory mechanism, positional encoding is added to give it some information about the relative position of the words in the sentence by representing a token into a d-dimensional space where tokens with similar meaning will be closer to each other.  
+    
     $$\Large{PE_{(pos, 2i)} = sin(pos / 10000^{2i / d_{model}})}$$
-    $$\Large{PE_{(pos, 2i+1)} = cos(pos / 10000^{2i / d_{model}})}$$
+    $$\Large{PE_{(pos, 2i+1)} = cos(pos / 10000^{2i / d_{model}})}$$  
+    
     - We create two different type of mask during training. One is for the padding masking, the other is for the decoder look_ahead masking to keep the following tokens invisible when generating the previous ones.
-    - The attention function used by the transformer takes three inputs: Q,K,V. The equation used to calculate the attention weights, which is scaled by a factor of square root of the depth is:
+    - The attention function used by the transformer takes three inputs: Q,K,V. The equation used to calculate the attention weights, which is scaled by a factor of square root of the depth is:  
+    
     $$\Large{Attention(Q, K, V) = softmax_k(\frac{QK^T}{\sqrt{d_k}}) V}$$
+    
     ![](images/scaled_attention.png)
+    
     - Multi-head attention consists of four parts: **Linear layers**、**Multi-head attention**、**Concatenation of heads** and **Final linear layers**.
+    
     ![](images/multi_head_attention.png)
+    
     - Pointwise feedforward network consists of two fully-connected layers with ReLU activation in between.
-    - Use the adam optimizer with a custom learning rate scheduler according to the formula like:
+    - Use the adam optimizer with a custom learning rate scheduler according to the formula like:  
+    
     $$\Large{lrate = d_{model}^{-0.5} * min(step{\_}num^{-0.5}, step{\_}num * warmup{\_}steps^{-1.5})}$$
+    
     ![](images/learning_rate.png)
 
 However, such a strong architecture still have some downsides:
