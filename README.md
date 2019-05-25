@@ -1,6 +1,6 @@
 An Implementation of Attention is all you need with Chinese Corpus
 ===
-&emsp;&emsp;The code is an implementation of Paper [Attention is all you need](https://arxiv.org/abs/1706.03762) working for dialogue generation tasks like: **Chatbot**、 **Text Generation** and so on.
+&emsp;&emsp;The code is an implementation of Paper [Attention is all you need](https://arxiv.org/abs/1706.03762) working for dialogue generation tasks like: **Chatbot**、 **Text Generation** and so on.  
 &emsp;&emsp;**Thanks to every friends who have raised issues and helped solve them. Your contribution is very important for the improvement of this project. Due to the limited support of the 'static graph mode' in coding, we decided to move the features to 2.0.0-alpha0 version. However if you worry about the problems from docker building and service creation with version issues, we still keep an old version of the code written by eager mode using tensorflow 1.12.x version to refer.**
 
 # Documents
@@ -47,10 +47,11 @@ An Implementation of Attention is all you need with Chinese Corpus
 - jupyter notebook
 
 # Construction Details
-&emsp;&emsp;As we all know the Translation System can be used in implementing conversational model just by replacing the paris of two different sentences to questions and answers. After all, the basic conversation model named "Sequence-to-Sequence" is develped from translation system. Therefore, why we not to improve the efficiency of conversation model in generating dialogues?
+&emsp;&emsp;As we all know the Translation System can be used in implementing conversational model just by replacing the paris of two different sentences to questions and answers. After all, the basic conversation model named "Sequence-to-Sequence" is develped from translation system. Therefore, why we not to improve the efficiency of conversation model in generating dialogues?  
+
 ![](images/transformer.png)
 
-&emsp;&emsp;With the development of [BERT-based models](https://arxiv.org/abs/1810.04805), more and more nlp tasks are refreshed constantly. However, the language model is not contained in BERT's open source tasks. There is no doubt that on this way we still have a long way to go.
+&emsp;&emsp;With the development of [BERT-based models](https://arxiv.org/abs/1810.04805), more and more nlp tasks are refreshed constantly. However, the language model is not contained in BERT's open source tasks. There is no doubt that on this way we still have a long way to go.  
 &emsp;&emsp;A transformer model handles variable-sized input using stacks of self-attention layers instead of RNNs or CNNs. This general architecture has a number of advantages and special ticks. Now let's take them out:
 
 - It make no assumptions about the temporal/spatial relationships across the data.(However this was proved to be not sure from AutoML)
