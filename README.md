@@ -12,27 +12,27 @@ An Implementation of Attention is all you need with Chinese Corpus
         |-- tgt-train.csv
         `-- tgt-val.csv
     |-- old_version/
-        |-- data_loader.csv
-        |-- eval.csv
-        |-- make_dic.csv
-        |-- modules.csv
-        |-- params.csv
+        |-- data_loader.py
+        |-- eval.py
+        |-- make_dic.py
+        |-- modules.py
+        |-- params.py
         |-- requirements.txt
-        `-- train.csv
+        `-- train.py
     |-- tf1.12.0-eager/
-        |-- bleu.csv
+        |-- bleu.py
         |-- main.ipynb
-        |-- modules.csv
-        |-- params.csv
+        |-- modules.py
+        |-- params.py
         |-- requirements.txt
-        `-- utils.csv
+        `-- utils.py
     |-- images/
-    |-- bleu.csv
+    |-- bleu.py
     |-- main-v2.ipynb
-    |-- modules-v2.csv
-    |-- params.csv
+    |-- modules-v2.py
+    |-- params.py
     |-- requirements.txt
-    `-- utils-v2.csv
+    `-- utils-v2.py
 ```
 
 # Requirements
