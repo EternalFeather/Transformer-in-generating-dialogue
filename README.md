@@ -46,12 +46,16 @@ An Implementation of Attention is all you need with Chinese Corpus
 - nltk
 - jupyter notebook
 
-# Construction Details
+# Construction
 &emsp;&emsp;As we all know the Translation System can be used in implementing conversational model just by replacing the paris of two different sentences to questions and answers. After all, the basic conversation model named "Sequence-to-Sequence" is develped from translation system. Therefore, why we not to improve the efficiency of conversation model in generating dialogues?  
 
-![](images/transformer.png)
+<div align='center'>
+    <img class="course-image" src="https://github.com/EternalFeather/Transformer-in-generating-dialogue/blob/master/images/transformer.png">
+</div>
 
 &emsp;&emsp;With the development of [BERT-based models](https://arxiv.org/abs/1810.04805), more and more nlp tasks are refreshed constantly. However, the language model is not contained in BERT's open source tasks. There is no doubt that on this way we still have a long way to go.  
+
+## Model Advantages
 &emsp;&emsp;A transformer model handles variable-sized input using stacks of self-attention layers instead of RNNs or CNNs. This general architecture has a number of advantages and special ticks. Now let's take them out:
 
 - It make no assumptions about the temporal/spatial relationships across the data.(However this was proved to be not sure from AutoML)
@@ -71,6 +75,9 @@ An Implementation of Attention is all you need with Chinese Corpus
 
 <div align='center'>
     <img src="http://latex.codecogs.com/gif.latex?\Large{PE_{(pos, 2i)} = sin(pos / 10000^{2i / d_{model}})}" />
+</div>
+
+<div align='center'>    
     <img src="http://latex.codecogs.com/gif.latex?\Large{PE_{(pos, 2i+1)} = cos(pos / 10000^{2i / d_{model}})}" />
 </div>
 
@@ -84,19 +91,31 @@ An Implementation of Attention is all you need with Chinese Corpus
     <img src="http://latex.codecogs.com/gif.latex?\Large{Attention(Q, K, V) = softmax_k(\frac{QK^T}{\sqrt{d_k}}) V}" />  
 </div>
 
-<img class="course-image" src="https://github.com/EternalFeather/Transformer-in-generating-dialogue/blob/master/images/scaled_attention.png">
+<div align='center'>
+    <img class="course-image" src="https://github.com/EternalFeather/Transformer-in-generating-dialogue/blob/master/images/scaled_attention.png">
+</div>
 
+### Multi-head attention
 - Multi-head attention consists of four parts: **Linear layers**、**Multi-head attention**、**Concatenation of heads** and **Final linear layers**.
 
-![](images/multi_head_attention.png)
+<div align='center'>
+    <img class="course-image" src="https://github.com/EternalFeather/Transformer-in-generating-dialogue/blob/master/images/multi_head_attention.png">
+</div>
 
+### Pointwise Feedforward Network
 - Pointwise feedforward network consists of two fully-connected layers with ReLU activation in between.
 - Use the adam optimizer with a custom learning rate scheduler according to the formula like:  
 
-<img src="http://latex.codecogs.com/gif.latex?\Large{lrate = d_{model}^{-0.5} * min(step{\_}num^{-0.5}, step{\_}num * warmup{\_}steps^{-1.5})}" />  
+<div align='center'>
+    <img src="http://latex.codecogs.com/gif.latex?\Large{lrate = d_{model}^{-0.5} * min(step{\_}num^{-0.5}, step{\_}num * warmup{\_}steps^{-1.5})}" />  
+</div>
 
-![](images/learning_rate.png)
+<div align='center'>
+    <img class="course-image" src="https://github.com/EternalFeather/Transformer-in-generating-dialogue/blob/master/images/learning_rate.png">
+</div>
 
+
+## Model Downsides
 However, such a strong architecture still have some downsides:
 - For a time-series, the output for a time-step is calculated from the entire history of only the inputs and current hidden-state(Just like the different between CRF & HMM). So that it may be less efficient.
 - As the first part above said, if the input does have a temporal/spatial relationship, like text generation task, the model may be lost in the context.
@@ -185,21 +204,29 @@ placeholder
 
 - Training Accuracy
 
-![](https://i.imgur.com/wZW34e8.png)
+<div align='center'>
+    <img class="course-image" src="https://i.imgur.com/wZW34e8.png">
+</div>
 
 - Training Loss
 
-![](https://i.imgur.com/p5MSVVQ.png)
+<div align='center'>
+    <img class="course-image" src="https://i.imgur.com/p5MSVVQ.png">
+</div>
 
 ## Implement feedforward through convolution in only one dimention.
 
 - Training Accuracy
 
-![](https://i.imgur.com/y2Q9yM8.png)
+<div align='center'>
+    <img class="course-image" src="https://i.imgur.com/y2Q9yM8.png">
+</div>
 
 - Training Loss
 
-![](https://i.imgur.com/MJdMnvt.png)
+<div align='center'>
+    <img class="course-image" src="https://i.imgur.com/MJdMnvt.png">
+</div>
 
 # Reference
 
