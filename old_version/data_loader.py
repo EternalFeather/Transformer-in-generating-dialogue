@@ -6,6 +6,7 @@ import sys
 import numpy as np
 import tensorflow as tf
 
+
 def load_vocab(vocab):
 	'''
 	Load word token from encoding dictionary
@@ -17,6 +18,7 @@ def load_vocab(vocab):
 	word2idx_dic = {word: idx for idx, word in enumerate(vocab)}
 	idx2word_dic = {idx: word for idx, word in enumerate(vocab)}
 	return word2idx_dic, idx2word_dic
+
 
 def generate_dataset(source_sents, target_sents):
 	'''
@@ -54,6 +56,7 @@ def generate_dataset(source_sents, target_sents):
 
 	return X, Y, Sources, Targets
 
+
 def load_data(l_data):
 	'''
 	Read train-data from input datasets
@@ -82,6 +85,7 @@ def load_data(l_data):
 	else:
 		print("MSG : Error when load data.")
 		sys.exit(0)
+
 
 def get_batch_data():
 	'''

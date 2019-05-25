@@ -1,34 +1,95 @@
 An Implementation of Attention is all you need with Chinese Corpus
 ===
+&emsp;&emsp;The code is an implementation of Paper [Attention is all you need](https://arxiv.org/abs/1706.03762) working for dialogue generation tasks like: **Chatbot**、 **Text Generation** and so on.
+&emsp;&emsp;**Thanks to every friends who have raised issues and helped solve them. Your contribution is very important for the improvement of this project. Due to the limited support of the 'static graph mode' in coding, we decided to move the features to 2.0.0-alpha0 version. However if you worry about the problems from docker building and service creation with version issues, we still keep an old version of the code written by eager mode using tensorflow 1.12.x version to refer.**
+
+# Documents
+```
+|-- root/
+    |-- data/
+        |-- src-train.csv
+        |-- src-val.csv
+        |-- tgt-train.csv
+        `-- tgt-val.csv
+    |-- old_version/
+        |-- data_loader.csv
+        |-- eval.csv
+        |-- make_dic.csv
+        |-- modules.csv
+        |-- params.csv
+        |-- requirements.txt
+        `-- train.csv
+    |-- tf1.12.0-eager/
+        |-- bleu.csv
+        |-- main.ipynb
+        |-- modules.csv
+        |-- params.csv
+        |-- requirements.txt
+        `-- utils.csv
+    |-- images/
+    |-- bleu.csv
+    |-- main-v2.ipynb
+    |-- modules-v2.csv
+    |-- params.csv
+    |-- requirements.txt
+    `-- utils-v2.csv
+```
+
 # Requirements
 - Numpy >= 1.13.1
-- Tensorflow-gpu >= 1.2.1
+- Tensorflow-gpu == 1.12.0
+- **Tensorflow-gpu == 2.0.0-alpha0**
+    - cudatoolkit >= 10.0
+    - cudnn >= 7.4 
+    - nvidia cuda driver version >= 410.x
 - tqdm
 - nltk
+- jupyter notebook
 
 # Construction Details
-As we all know Translation System can be used in implementing conversational model just by replacing the paris of two different sentences to questions and answers. After all, the basic conversation model named "Sequence-to-Sequence" is develped from translation system. Therefore, why we not to improve the efficiency of conversation model in generating dialogues?
-![](https://i.imgur.com/x5FRdRo.png)
+&emsp;&emsp;As we all know the Translation System can be used in implementing conversational model just by replacing the paris of two different sentences to questions and answers. After all, the basic conversation model named "Sequence-to-Sequence" is develped from translation system. Therefore, why we not to improve the efficiency of conversation model in generating dialogues?
+![](images/transformer.png)
 
-This is the structure of transformer which is the core of implementing our model. Now let's split it into several points:
+&emsp;&emsp;With the development of [BERT-based models](https://arxiv.org/abs/1810.04805), more and more nlp tasks are refreshed constantly. However, the language model is not contained in BERT's open source tasks. There is no doubt that on this way we still have a long way to go.
+&emsp;&emsp;A transformer model handles variable-sized input using stacks of self-attention layers instead of RNNs or CNNs. This general architecture has a number of advantages and special ticks. Now let's take them out:
 
-- First one is Input Datasets(Get the batch datasets from generator, which is represented as a list of token ids in this experiment).
-- Second one is Embedding layers(Including two parts:**Dataset Embedding** and **Positional Embedding**)
-    - Dataset Embedding transform input token ids into a one-hot vector whose size is the length of vocabulary.
-    - Positional Embedding also called positional encoding. It considered the index of each word in the list of sentence as the position symbol.
-    - Third we have a multi-head attention model to split the output of embedding layers into many pieces and run through different attention models parallelly. Finally we can get the result by concating all the outputs from every models.
-    - Finally, going through a feed forward layer and combining with residual items, so that we can get the result. 
+- It make no assumptions about the temporal/spatial relationships across the data.(However this was proved to be not sure from AutoML)
+- Layer outputs can be calculated in parallel, instead of a series like an RNN.(Faster training)
+- Distant items can affect each other's output without passing through many RNN-steps, or CNN layers.(Lower cost)
+- It can learn long-range dependencies, which is a challenge of dialogue system.
+- **In the newest version of our code**, we complete the details described in paper.
+    - Use tfrecord to unified data storage format.
+    - Use dataset to load the processed chinese token datasets.
+    - Since the model doesn't contain any memory mechanism, positional encoding is added to give it some information about the relative position of the words in the sentence by representing a token into a d-dimensional space where tokens with similar meaning will be closer to each other. 
+    $$\Large{PE_{(pos, 2i)} = sin(pos / 10000^{2i / d_{model}})}$$
+    $$\Large{PE_{(pos, 2i+1)} = cos(pos / 10000^{2i / d_{model}})}$$
+    - We create two different type of mask during training. One is for the padding masking, the other is for the decoder look_ahead masking to keep the following tokens invisible when generating the previous ones.
+    - The attention function used by the transformer takes three inputs: Q,K,V. The equation used to calculate the attention weights, which is scaled by a factor of square root of the depth is:
+    $$\Large{Attention(Q, K, V) = softmax_k(\frac{QK^T}{\sqrt{d_k}}) V}$$
+    ![](images/scaled_attention.png)
+    - Multi-head attention consists of four parts: **Linear layers**、**Multi-head attention**、**Concatenation of heads** and **Final linear layers**.
+    ![](images/multi_head_attention.png)
+    - Pointwise feedforward network consists of two fully-connected layers with ReLU activation in between.
+    - Use the adam optimizer with a custom learning rate scheduler according to the formula like:
+    $$\Large{lrate = d_{model}^{-0.5} * min(step{\_}num^{-0.5}, step{\_}num * warmup{\_}steps^{-1.5})}$$
+    ![](images/learning_rate.png)
 
-![](https://i.imgur.com/YfKUgIC.png)
+However, such a strong architecture still have some downsides:
+- For a time-series, the output for a time-step is calculated from the entire history of only the inputs and current hidden-state(Just like the different between CRF & HMM). So that it may be less efficient.
+- As the first part above said, if the input does have a temporal/spatial relationship, like text generation task, the model may be lost in the context.
 
 # Usage
-- STEP 1. Download dialogue corpus with format like sample datasets and extract them to `data/` folder.
-- STEP 2. Adjust hyper parameters in `params.py` if you want.
-- STEP 3. Run `make_dic.py` to generate vocabulary files to a new folder named `dictionary`.
-- STEP 4. Run `train.py` to build the model. Checkpoint will be stored in `checkpoint` folder while the tensorflow event files can be found in `logdir`. 
-- STEP 5. Run `eval.py` to evaluate the result with testing data. Result will be stored in `Results` folder.
+- old_version
+    - STEP 1. Download dialogue corpus with format like sample datasets and extract them to `data/` folder.
+    - STEP 2. Adjust hyper parameters in `params.py` if you want.
+    - STEP 3. Run `make_dic.py` to generate vocabulary files to a new folder named `dictionary`.
+    - STEP 4. Run `train.py` to build the model. Checkpoint will be stored in `checkpoint` folder while the tensorflow event files can be found in `logdir`. 
+    - STEP 5. Run `eval.py` to evaluate the result with testing data. Result will be stored in `Results` folder.
+- new_version(2.0 & 1.12.x with eager mode)
+    - follow the .ipynb to run train & eval & demo
 
 # Results
+- old_version demo
 ```
 - Source: 肥 宅 初 夜 可 以 賣 多 少 `
 - Ground Truth: 肥 宅 還 是 去 打 手 槍 吧
@@ -90,6 +151,10 @@ This is the structure of transformer which is the core of implementing our model
 - Ground Truth: 被 病 毒 滅 亡 真 的 會 -
 - Predict: <UNK> 守 得 住
 ```
+- the new version will be update soon ...
+```
+placeholder
+```
 
 # Comparison
 
@@ -115,6 +180,4 @@ This is the structure of transformer which is the core of implementing our model
 
 # Reference
 
-Thanks for [Transformer](https://github.com/Kyubyong/transformer)
-
-- 本文在原先的模组上添加了Attention is all you need提到的Position encoding的部分
+Thanks for [Transformer](https://github.com/Kyubyong/transformer) and [Tensorflow](https://www.tensorflow.org)

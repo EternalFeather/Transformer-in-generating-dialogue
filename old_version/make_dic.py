@@ -5,6 +5,7 @@ import codecs
 import os
 from collections import Counter
 
+
 def make_dic(path, fname):
 	'''
 	Constructs vocabulary as a dictionary
@@ -24,6 +25,7 @@ def make_dic(path, fname):
 		f.write("{}\t1000000000\n{}\t1000000000\n{}\t1000000000\n{}\t1000000000\n".format("<PAD>","<UNK>","<STR>","<EOS>"))
 		for word, count in wordCount.most_common(len(wordCount)):
 			f.write(u"{}\t{}\n".format(word, count))
+
 
 if __name__ == '__main__':
 	make_dic(pm.src_train, "en.vocab.tsv")

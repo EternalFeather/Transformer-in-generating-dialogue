@@ -4,6 +4,7 @@ import tensorflow as tf
 import numpy as np
 import math
 
+
 def normalize(inputs,
 			epsilon = 1e-8,
 			scope = "ln",
@@ -55,40 +56,6 @@ def positional_encoding(inputs,
 		Returns:
 			A 'Tensor' with one more rank than inputs's, with the dimensionality should be 'num_units'
 	'''
-
-	# f = 10000.
-	# position_block = np.broadcast_to(np.arange(vocab_size)[None, None, :], (inputs, num_units // 2, vocab_size)).astype('float32')
-	# unit_block = np.broadcast_to(np.arange(num_units // 2)[None, :, None], (inputs, num_units // 2, vocab_size)).astype('float32')
-	# rad_block = position_block / (f * 1.) ** (unit_block / (num_units // 2))
-	# sin_block = np.sin(rad_block)
-	# cos_block = np.cos(rad_block)
-
-#	with tf.variable_scope(scope, reuse = reuse):
-
-# 		input_one = tf.tile(tf.expand_dims(tf.range(tf.shape(inputs)[1]), 0), [tf.shape(inputs)[0], 1])
-# 		position_block = tf.tile(tf.expand_dims(tf.range(vocab_size), 1), [1, num_units // 2])
-# 		unit_block = tf.tile(tf.expand_dims(tf.range(num_units // 2), 0), [vocab_size, 1])
-# 		rad_block = tf.pow(tf.div(position_block, tf.multiply(10000, 1)), tf.div(unit_block, num_units // 2))
-# 		sin_block = tf.sin(tf.cast(rad_block, tf.float32))
-# 		cos_block = tf.cos(tf.cast(rad_block, tf.float32))
-# 		lookup_table = tf.concat([sin_block, cos_block], axis = 1)
-
-# 		# lookup_table = tf.get_variable('lookup_table',
-# 		# 								dtype = tf.float32,
-# 		# 								shape = [vocab_size, num_units],
-# 		# 								initializer = tf.contrib.layers.xavier_initializer())
-
-# 		if zero_pad:
-
-# 			lookup_table = tf.concat((tf.zeros(shape = [1, num_units]),
-# 									lookup_table[1:, :]), 0)
-# 		outputs = tf.nn.embedding_lookup(lookup_table, input_one)
-		
-# 		if scale:
-# 			outputs = outputs * math.sqrt(num_units)
-
-# 	return outputs
-
 	N, T = inputs.get_shape().as_list()
 	
    	with tf.variable_scope(scope, reuse=reuse):
@@ -270,6 +237,7 @@ def multihead_attention(queries,
 
 	return outputs
 
+
 def feedforward(inputs,
 				num_units = [2048, 512],
 				scope = "multihead_attention",
@@ -310,6 +278,7 @@ def feedforward(inputs,
 		outputs = normalize(outputs)
 
 	return outputs
+
 
 def label_smoothing(inputs, epsilon = 0.1):
 	'''

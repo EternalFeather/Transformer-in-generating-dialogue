@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import print_function
 import tensorflow as tf
 from params import Params as pm
@@ -7,6 +6,7 @@ from data_loader import get_batch_data, load_vocab
 from modules import *
 from tqdm import tqdm
 import os
+
 
 class Graph():
 	def __init__(self, is_training = True):
@@ -128,11 +128,12 @@ class Graph():
 				tf.summary.scalar('mean_loss', self.mean_loss)
 				self.merged = tf.summary.merge_all()
 
+
 if __name__ == '__main__':
 	en2idx, idx2en = load_vocab('en.vocab.tsv')
 	de2idx, idx2de = load_vocab('de.vocab.tsv')
 
-	g = Graph("train")
+	g = Graph(True)
 	print("MSG : Graph loaded!")
 
 	# save model and use this model to training

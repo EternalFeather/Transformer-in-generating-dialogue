@@ -60,6 +60,7 @@ def eval():
 				score = corpus_bleu(list_of_refs, predict)
 				f.write("Bleu Score = " + str(100 * score))
 
+
 if __name__ == '__main__':
 	eval()
 	print("MSG : Done!")
