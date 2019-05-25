@@ -104,6 +104,8 @@ An Implementation of Attention is all you need with Chinese Corpus
 
 ### Pointwise Feedforward Network
 - Pointwise feedforward network consists of two fully-connected layers with ReLU activation in between.
+
+### Learning Rate Schedule
 - Use the adam optimizer with a custom learning rate scheduler according to the formula like:  
 
 <div align='center'>
