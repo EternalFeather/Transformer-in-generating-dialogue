@@ -5,7 +5,6 @@ import os
 from collections import Counter
 from tqdm import tqdm
 import tensorflow as tf
-import matplotlib.pyplot as plt
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import math_ops
 import functools
@@ -39,7 +38,7 @@ def load_vocab(vocab):
 	"""
 	vocab = [line.split()[0] for line in open(
 		'{}{}'.format(pm.vocab_path, vocab), 'r', encoding='utf-8').read().splitlines()
-		if int(line.split()[1]) >= pm.word_limit_size]
+			 if int(line.split()[1]) >= pm.word_limit_size]
 	word2idx_dic = {word: idx for idx, word in enumerate(vocab)}
 	idx2word_dic = {idx: word for idx, word in enumerate(vocab)}
 	return word2idx_dic, idx2word_dic
@@ -63,13 +62,8 @@ def tokenize_sequences(source_sent, target_sent):
 		:param target_sent: [List], decoding sentences from tgt-train file
 		:return: token sequences & source sentences
 	"""
-	source_sent = source_sent.decode('utf-8')
-	target_sent = target_sent.decode('utf-8')
-
-	if len(source_sent.split()) > pm.maxlen - 2:
-		source_sent = source_sent[: pm.maxlen - 2]
-	if len(target_sent.split()) > pm.maxlen - 2:
-		target_sent = target_sent[: pm.maxlen - 2]
+	source_sent = source_sent.numpy().decode('utf-8')
+	target_sent = target_sent.numpy().decode('utf-8')
 
 	inpt = [en2idx.get(word, 1) for word in (u"<SOS> " + source_sent + u" <EOS>").split()]
 	outpt = [de2idx.get(word, 1) for word in (u"<SOS> " + target_sent + u" <EOS>").split()]
@@ -78,7 +72,7 @@ def tokenize_sequences(source_sent, target_sent):
 
 
 def jit_tokenize_sequences(source_sent, target_sent):
-	return tf.py_func(tokenize_sequences, [source_sent, target_sent], [tf.int32, tf.int32])
+	return tf.py_function(tokenize_sequences, [source_sent, target_sent], [tf.int64, tf.int64])
 
 
 def filter_single_word(source_sent, target_sent):
@@ -127,12 +121,18 @@ def build_dataset(mode, filename=None, corpus=None, is_training=True):
 	"""
 	if mode == 'array':
 		assert corpus is not None
-		dataset = tf.data.Dataset.from_tensor_slices([sent.encode('utf-8') for sent in corpus])
+		def _parse(example):
+			return example[0], example[1]
+
+		src, tgt = corpus
+		real_data = [(inp.encode('utf-8'), tar.encode('utf-8')) for inp, tar in zip(src, tgt)]
+		dataset = tf.data.Dataset.from_tensor_slices(real_data)
+		dataset = dataset.map(_parse, num_parallel_calls=2)
 		dataset = dataset.map(jit_tokenize_sequences, num_parallel_calls=2)
 		dataset = dataset.filter(filter_single_word).cache().shuffle(pm.buffer_size) if is_training else dataset
 		dataset = dataset.padded_batch(pm.batch_size, padded_shapes=([-1], [-1])) if is_training else \
 			dataset.padded_batch(1, padded_shapes=([-1], [-1]))
-		dataset = dataset.prefetch(buffer_size=10) if is_training else dataset
+		dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE) if is_training else dataset
 		return dataset
 	elif mode == 'file':
 		def _parse(example):
@@ -153,7 +153,7 @@ def build_dataset(mode, filename=None, corpus=None, is_training=True):
 		dataset = dataset.filter(filter_single_word).cache().shuffle(pm.buffer_size) if is_training else dataset
 		dataset = dataset.padded_batch(pm.batch_size, padded_shapes=([-1], [-1])) if is_training else \
 			dataset.padded_batch(1, padded_shapes=([-1], [-1]))
-		dataset = dataset.prefetch(buffer_size=10) if is_training else dataset
+		dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE) if is_training else dataset
 		return dataset
 	else:
 		raise ValueError('Something wrong about the mode when loading dataset ...')
@@ -206,34 +206,3 @@ def create_masks(inp, tar):
 	combined_mask = tf.maximum(dec_tar_padding_mask, look_ahead_mask)
 
 	return enc_padding_mask, combined_mask, dec_padding_mask
-
-
-def plot_attention_weights(attention, sentence, result, block):
-	fig = plt.figure(figsize=(16, 8))
-
-	sentence = [en2idx.get(word, 1) for word in sentence]
-	attention = tf.squeeze(attention[block], axis=0)
-
-	for head in range(attention.shape[0]):
-		ax = fig.add_subplot(2, 4, head + 1)
-
-		ax.matshow(attention[head][:-1, :], cmap='viridis')
-		fontdict = {'fontsize': 10}
-
-		ax.set_xtricks(range(len(sentence) + 2))
-		ax.set_yticks(range(len(result)))
-
-		ax.set_ylim(len(result)-1.5, -0.5)
-
-		ax.set_xticklabels(['<SOS>'] + [list(idx2en.get(i, 1)) for i in sentence] + ['<EOS>'],
-						   fontdict=fontdict, rotation=90)
-
-		ax.set_yticklabels([list(idx2en.get(i, 1)) for i in result if i < len(idx2en)],
-						   fontdict=fontdict)
-
-		ax.set_xlabel('Head {}'.format(head + 1))
-
-	plt.tight_layout()
-	plt.show()
-
-

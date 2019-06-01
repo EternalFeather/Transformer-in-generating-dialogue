@@ -133,7 +133,7 @@ However, such a strong architecture still have some downsides:
     - follow the .ipynb to run train & eval & demo
 
 # Results
-- old_version demo
+- demo
 ```
 - Source: 肥 宅 初 夜 可 以 賣 多 少 `
 - Ground Truth: 肥 宅 還 是 去 打 手 槍 吧
@@ -194,10 +194,6 @@ However, such a strong architecture still have some downsides:
 - Source: 2B 守 得 住 街 亭 嗎 `
 - Ground Truth: 被 病 毒 滅 亡 真 的 會 -
 - Predict: <UNK> 守 得 住
-```
-- the new version will be update soon ...
-```
-placeholder
 ```
 
 # Comparison

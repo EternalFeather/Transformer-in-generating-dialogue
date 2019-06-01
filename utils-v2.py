@@ -36,7 +36,7 @@ def load_vocab(vocab):
 	"""
 	vocab = [line.split()[0] for line in open(
 		'{}{}'.format(pm.vocab_path, vocab), 'r', encoding='utf-8').read().splitlines()
-		if int(line.split()[1]) >= pm.word_limit_size]
+			 if int(line.split()[1]) >= pm.word_limit_size]
 	word2idx_dic = {word: idx for idx, word in enumerate(vocab)}
 	idx2word_dic = {idx: word for idx, word in enumerate(vocab)}
 	return word2idx_dic, idx2word_dic
@@ -62,11 +62,6 @@ def tokenize_sequences(source_sent, target_sent):
 	"""
 	source_sent = source_sent.numpy().decode('utf-8')
 	target_sent = target_sent.numpy().decode('utf-8')
-
-	if len(source_sent.split()) > pm.maxlen - 2:
-		source_sent = source_sent[: pm.maxlen - 2]
-	if len(target_sent.split()) > pm.maxlen - 2:
-		target_sent = target_sent[: pm.maxlen - 2]
 
 	inpt = [en2idx.get(word, 1) for word in (u"<SOS> " + source_sent + u" <EOS>").split()]
 	outpt = [de2idx.get(word, 1) for word in (u"<SOS> " + target_sent + u" <EOS>").split()]
@@ -124,8 +119,14 @@ def build_dataset(mode, filename=None, corpus=None, is_training=True):
 	"""
 	if mode == 'array':
 		assert corpus is not None
-		dataset = tf.data.Dataset.from_tensor_slices([sent.encode('utf-8') for sent in corpus])
-		dataset = dataset.map(jit_tokenize_sequences)
+		def _parse(example):
+			return example[0], example[1]
+
+		src, tgt = corpus
+		real_data = [(inp.encode('utf-8'), tar.encode('utf-8')) for inp, tar in zip(src, tgt)]
+		dataset = tf.data.Dataset.from_tensor_slices(real_data)
+		dataset = dataset.map(_parse, num_parallel_calls=2)
+		dataset = dataset.map(jit_tokenize_sequences, num_parallel_calls=2)
 		dataset = dataset.filter(filter_single_word).cache().shuffle(pm.buffer_size) if is_training else dataset
 		dataset = dataset.padded_batch(pm.batch_size, padded_shapes=([-1], [-1])) if is_training else \
 			dataset.padded_batch(1, padded_shapes=([-1], [-1]))
@@ -145,8 +146,8 @@ def build_dataset(mode, filename=None, corpus=None, is_training=True):
 
 		assert filename is not None
 		dataset = tf.data.TFRecordDataset(filename)
-		dataset = dataset.map(_parse)
-		dataset = dataset.map(jit_tokenize_sequences)
+		dataset = dataset.map(_parse, num_parallel_calls=2)
+		dataset = dataset.map(jit_tokenize_sequences, num_parallel_calls=2)
 		dataset = dataset.filter(filter_single_word).cache().shuffle(pm.buffer_size) if is_training else dataset
 		dataset = dataset.padded_batch(pm.batch_size, padded_shapes=([-1], [-1])) if is_training else \
 			dataset.padded_batch(1, padded_shapes=([-1], [-1]))
@@ -169,6 +170,22 @@ class LRSchedule(tf.keras.optimizers.schedules.LearningRateSchedule):
 		arg2 = step * (self.warmup_steps ** -1.5)
 
 		return tf.math.rsqrt(self.d_model) * tf.minimum(arg1, arg2)
+
+
+class polynomialLR(tf.keras.optimizers.schedules.LearningRateSchedule):
+	def __init__(self, sl, el, decay_steps, power):
+		super(polynomialLR, self).__init__()
+
+		# It must be tensor else raise "Could not find valid device for node." error.
+		self.sl = sl
+		self.el = el
+		self.decay_steps = decay_steps
+		self.power = power
+
+	def __call__(self, step):
+		arg1 = self.decay_steps * tf.math.ceil(step / self.decay_steps)
+
+		return (self.sl - self.el) * (1 - step / arg1) ** self.power + self.el
 
 
 def masking(sequence, task='padding'):
@@ -202,11 +219,11 @@ def create_masks(inp, tar):
 	return enc_padding_mask, combined_mask, dec_padding_mask
 
 
-def plot_attention_weights(attention, sentence, result, block):
+def plot_attention_weights(attention, sentence, result, layer):
 	fig = plt.figure(figsize=(16, 8))
 
-	sentence = [en2idx.get(word, 1) for word in sentence]
-	attention = tf.squeeze(attention[block], axis=0)
+	sentence = [en2idx.get(word, 1) for word in sentence.split()]
+	attention = tf.squeeze(attention[layer], axis=0)
 
 	for head in range(attention.shape[0]):
 		ax = fig.add_subplot(2, 4, head + 1)
@@ -214,20 +231,18 @@ def plot_attention_weights(attention, sentence, result, block):
 		ax.matshow(attention[head][:-1, :], cmap='viridis')
 		fontdict = {'fontsize': 10}
 
-		ax.set_xtricks(range(len(sentence) + 2))
+		ax.set_xticks(range(len(sentence) + 2))
 		ax.set_yticks(range(len(result)))
 
 		ax.set_ylim(len(result)-1.5, -0.5)
 
-		ax.set_xticklabels(['<SOS>'] + [list(idx2en.get(i, 1)) for i in sentence] + ['<EOS>'],
+		ax.set_xticklabels(['<SOS>'] + [idx2en.get(i, 1) for i in sentence] + ['<EOS>'],
 						   fontdict=fontdict, rotation=90)
 
-		ax.set_yticklabels([list(idx2en.get(i, 1)) for i in result if i < len(idx2en)],
+		ax.set_yticklabels([idx2de.get(i, 1) for i in result.numpy() if i < len(idx2de) and i not in [0, 2, 3]],
 						   fontdict=fontdict)
 
 		ax.set_xlabel('Head {}'.format(head + 1))
 
 	plt.tight_layout()
 	plt.show()
-
-

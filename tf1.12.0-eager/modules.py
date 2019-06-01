@@ -5,32 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def scaled_dot_product_attention(q, k, v, mask=None):
-	"""
-	Calculate the attention weights.
-
-	Args:
-		:param q: [Tensor], query with shape [..., seq_len_q, d_model]
-		:param k: [Tensor], key with shape [..., seq_len_k, d_model]
-		:param v: [Tensor], value with shape [..., seq_len_v, d_model]
-		:param mask: [Tensor], Float tensor with shape [..., seq_len_q, seq_len_k], default to None
-		:return: [Tensor], output, attention_weights
-	"""
-	matmul_qk = tf.matmul(q, k, transpose_b=True)
-
-	dk = tf.cast(tf.shape(k)[-1], tf.float32)
-	scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
-
-	# Heuristic mask implementation that add an infinitesimal number so that its effect can be ignored
-	if mask is not None:
-		scaled_attention_logits += (mask * -1e9)
-
-	attention_weights = tf.nn.softmax(scaled_attention_logits, axis=-1)
-	output = tf.matmul(attention_weights, v)
-
-	return output, attention_weights
-
-
 def positional_encoding(seq_len, num_units, visualization=False):
 	"""
 	Positional_Encoding for a given tensor.
@@ -65,6 +39,32 @@ def positional_encoding(seq_len, num_units, visualization=False):
 		plt.show()
 
 	return tf.cast(pos_encoding, tf.float32)
+
+
+def scaled_dot_product_attention(q, k, v, mask=None):
+	"""
+	Calculate the attention weights.
+
+	Args:
+		:param q: [Tensor], query with shape [..., seq_len_q, d_model]
+		:param k: [Tensor], key with shape [..., seq_len_k, d_model]
+		:param v: [Tensor], value with shape [..., seq_len_v, d_model]
+		:param mask: [Tensor], Float tensor with shape [..., seq_len_q, seq_len_k], default to None
+		:return: [Tensor], output, attention_weights
+	"""
+	matmul_qk = tf.matmul(q, k, transpose_b=True)
+
+	dk = tf.cast(tf.shape(k)[-1], tf.float32)
+	scaled_attention_logits = matmul_qk / tf.math.sqrt(dk)
+
+	# Heuristic mask implementation that add an infinitesimal number so that its effect can be ignored
+	if mask is not None:
+		scaled_attention_logits += (mask * -1e9)
+
+	attention_weights = tf.nn.softmax(scaled_attention_logits, axis=-1)
+	output = tf.matmul(attention_weights, v)
+
+	return output, attention_weights
 
 
 class multihead_attention(tf.keras.layers.Layer):
@@ -257,4 +257,3 @@ class Transformer(tf.keras.Model):
 		final_output = self.final_layer(dec_output)
 
 		return final_output, attn_dict
-
