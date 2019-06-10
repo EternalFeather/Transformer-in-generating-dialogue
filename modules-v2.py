@@ -132,8 +132,8 @@ class EncoderBlock(tf.keras.layers.Layer):
 		self.multi_attn = multihead_attention(d_model, num_heads)
 		self.ffn = pointwise_feedforward(d_model, dff)
 
-		self.layer_norm_1 = tf.keras.layers.experimental.LayerNormalization(epsilon=1e-6)
-		self.layer_norm_2 = tf.keras.layers.experimental.LayerNormalization(epsilon=1e-6)
+		self.layer_norm_1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
+		self.layer_norm_2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
 
 		self.dropout_1 = tf.keras.layers.Dropout(rate)
 		self.dropout_2 = tf.keras.layers.Dropout(rate)
@@ -158,9 +158,9 @@ class DecoderBlock(tf.keras.layers.Layer):
 
 		self.ffn = pointwise_feedforward(d_model, dff)
 
-		self.layer_norm_1 = tf.keras.layers.experimental.LayerNormalization(epsilon=1e-6)
-		self.layer_norm_2 = tf.keras.layers.experimental.LayerNormalization(epsilon=1e-6)
-		self.layer_norm_3 = tf.keras.layers.experimental.LayerNormalization(epsilon=1e-6)
+		self.layer_norm_1 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
+		self.layer_norm_2 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
+		self.layer_norm_3 = tf.keras.layers.LayerNormalization(epsilon=1e-6)
 
 		self.dropout_1 = tf.keras.layers.Dropout(rate)
 		self.dropout_2 = tf.keras.layers.Dropout(rate)
