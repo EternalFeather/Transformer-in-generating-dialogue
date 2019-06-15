@@ -71,7 +71,7 @@ class multihead_attention(tf.keras.layers.Layer):
 	def __init__(self, d_model, num_heads):
 		super(multihead_attention, self).__init__()
 		self.num_heads = num_heads
-		self.d_model = d_model
+		self.d_model = d_moccccdel
 
 		assert d_model % self.num_heads == 0
 		self.depth = d_model // num_heads

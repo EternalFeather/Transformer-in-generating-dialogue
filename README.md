@@ -131,6 +131,7 @@ However, such a strong architecture still have some downsides:
     - STEP 5. Run `eval.py` to evaluate the result with testing data. Result will be stored in `Results` folder.
 - new_version(2.0 & 1.12.x with eager mode)
     - follow the .ipynb to run train & eval & demo
+        - if you use `GPU` to speed up training processing, please set up your device in the code.(It support multi-workers training)
 
 # Results
 - demo
@@ -225,6 +226,9 @@ However, such a strong architecture still have some downsides:
 <div align='center'>
     <img class="course-image" src="https://i.imgur.com/MJdMnvt.png">
 </div>
+
+# Tips
+If you try to use **AutoGraph** to speed up your training process, please make sure the datasets is padded to a fixed length. Because of the graph rebuilding operation will be activated during training, which may affect the performance. Our code only ensures the performance of version 2.0, and the lower ones can try to refer it.
 
 # Reference
 

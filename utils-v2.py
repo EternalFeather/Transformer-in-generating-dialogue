@@ -66,6 +66,11 @@ def tokenize_sequences(source_sent, target_sent):
 	inpt = [en2idx.get(word, 1) for word in (u"<SOS> " + source_sent + u" <EOS>").split()]
 	outpt = [de2idx.get(word, 1) for word in (u"<SOS> " + target_sent + u" <EOS>").split()]
 
+	if len(inpt) < pm.maxlen:
+		inpt += [0 for _ in range(pm.maxlen - len(inpt))]
+	if len(outpt) < pm.maxlen:
+		outpt += [0 for _ in range(pm.maxlen - len(outpt))]
+
 	return inpt, outpt
 
 
@@ -74,7 +79,7 @@ def jit_tokenize_sequences(source_sent, target_sent):
 
 
 def filter_single_word(source_sent, target_sent):
-	return tf.logical_and(tf.size(source_sent) > 1, tf.size(target_sent) > 1)
+	return tf.logical_and(tf.size(source_sent) <= pm.maxlen, tf.size(target_sent) <= pm.maxlen)
 
 
 def _byte_features(value):
@@ -107,16 +112,18 @@ def dump2record(filename, corpus1, corpus2):
 	writer.close()
 
 
-def build_dataset(mode, filename=None, corpus=None, is_training=True):
+def build_dataset(mode, batch_size, cache_name, filename=None, corpus=None, is_training=True):
 	"""
 	Read train-data from input datasets.
 
 	Args:
 		:param mode: [String], the tfrecord load mode, including 'array'(load from array) or 'file'(load from file)
+		:param batch_size: [String], cut data into batches for training
 		:param filename: [String], if mode == 'file' then input the path of tfrecord
 		:param corpus: [String], if mode == 'array' then input the corpus with array type
 		:return: datasets
 	"""
+	dataset_root = "/".join(pm.train_record.split('/')[:-1])
 	if mode == 'array':
 		assert corpus is not None
 		def _parse(example):
@@ -125,10 +132,10 @@ def build_dataset(mode, filename=None, corpus=None, is_training=True):
 		src, tgt = corpus
 		real_data = [(inp.encode('utf-8'), tar.encode('utf-8')) for inp, tar in zip(src, tgt)]
 		dataset = tf.data.Dataset.from_tensor_slices(real_data)
-		dataset = dataset.map(_parse, num_parallel_calls=2)
-		dataset = dataset.map(jit_tokenize_sequences, num_parallel_calls=2)
-		dataset = dataset.filter(filter_single_word).cache().shuffle(pm.buffer_size) if is_training else dataset
-		dataset = dataset.padded_batch(pm.batch_size, padded_shapes=([-1], [-1])) if is_training else \
+		dataset = dataset.map(_parse, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+		dataset = dataset.map(jit_tokenize_sequences, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+		dataset = dataset.filter(filter_single_word).cache(filename='{}/{}'.format(dataset_root, cache_name)).shuffle(pm.buffer_size) if is_training else dataset
+		dataset = dataset.padded_batch(batch_size, padded_shapes=([-1], [-1])) if is_training else \
 			dataset.padded_batch(1, padded_shapes=([-1], [-1]))
 		dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE) if is_training else dataset
 		return dataset
@@ -146,10 +153,10 @@ def build_dataset(mode, filename=None, corpus=None, is_training=True):
 
 		assert filename is not None
 		dataset = tf.data.TFRecordDataset(filename)
-		dataset = dataset.map(_parse, num_parallel_calls=2)
-		dataset = dataset.map(jit_tokenize_sequences, num_parallel_calls=2)
-		dataset = dataset.filter(filter_single_word).cache().shuffle(pm.buffer_size) if is_training else dataset
-		dataset = dataset.padded_batch(pm.batch_size, padded_shapes=([-1], [-1])) if is_training else \
+		dataset = dataset.map(_parse, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+		dataset = dataset.map(jit_tokenize_sequences, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+		dataset = dataset.filter(filter_single_word).cache(filename='{}/{}'.format(dataset_root, cache_name)).shuffle(pm.buffer_size) if is_training else dataset
+		dataset = dataset.padded_batch(batch_size, padded_shapes=([-1], [-1])) if is_training else \
 			dataset.padded_batch(1, padded_shapes=([-1], [-1]))
 		dataset = dataset.prefetch(tf.data.experimental.AUTOTUNE) if is_training else dataset
 		return dataset
