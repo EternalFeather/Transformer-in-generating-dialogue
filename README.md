@@ -1,7 +1,7 @@
 An Implementation of Attention is all you need with Chinese Corpus
 ===
 &emsp;&emsp;The code is an implementation of Paper [Attention is all you need](https://arxiv.org/abs/1706.03762) working for dialogue generation tasks like: **Chatbot**、 **Text Generation** and so on.  
-&emsp;&emsp;**Thanks to every friends who have raised issues and helped solve them. Your contribution is very important for the improvement of this project. Due to the limited support of the 'static graph mode' in coding, we decided to move the features to 2.0.0-beta0 version. However if you worry about the problems from docker building and service creation with version issues, we still keep an old version of the code written by eager mode using tensorflow 1.12.x version to refer.**
+&emsp;&emsp;**Thanks to every friends who have raised issues and helped solve them. Your contribution is very important for the improvement of this project. Due to the limited support of the 'static graph mode' in coding, we decided to move the features to 2.0.0-beta1 version. However if you worry about the problems from docker building and service creation with version issues, we still keep an old version of the code written by eager mode using tensorflow 1.12.x version to refer.**
 
 # Documents
 ```
@@ -38,7 +38,7 @@ An Implementation of Attention is all you need with Chinese Corpus
 # Requirements
 - Numpy >= 1.13.1
 - Tensorflow-gpu == 1.12.0
-- **Tensorflow-gpu == 2.0.0-beta0**
+- **Tensorflow-gpu == 2.0.0-beta1**
     - cudatoolkit >= 10.0
     - cudnn >= 7.4 
     - nvidia cuda driver version >= 410.x
@@ -228,7 +228,7 @@ However, such a strong architecture still have some downsides:
 </div>
 
 # Tips
-If you try to use **AutoGraph** to speed up your training process, please make sure the datasets is padded to a fixed length. Because of the graph rebuilding operation will be activated during training, which may affect the performance. Our code only ensures the performance of version 2.0, and the lower ones can try to refer it.
+&emsp;&emsp;If you try to use **AutoGraph** to speed up your training process, please make sure the datasets is padded to a fixed length. Because of the graph rebuilding operation will be activated during training, which may affect the performance. Our code only ensures the performance of version 2.0, and the lower ones can try to refer it.
 
 # Reference
 
