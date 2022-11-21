@@ -1,5 +1,5 @@
 nltk==3.4
 numpy==1.15.4
 tqdm==4.28.1
-tensorflow-gpu==2.0.0-alpha0
+tensorflow-gpu==2.9.3
 matplotlib==3.0.2
